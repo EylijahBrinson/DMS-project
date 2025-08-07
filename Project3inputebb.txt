@@ -1,0 +1,596 @@
+SQL> 
+SQL> -- Eylijah Brinson
+SQL> -- Project 3
+SQL> -- INSY 3304-001
+SQL> 
+SQL> 
+SQL> -- PartII
+SQL> 	     ALTER SESSION SET nls_date_format='MM/DD/YYYY HH12:MI AM' ;
+
+Session altered.
+
+SQL> 
+SQL> -- 2. Make sure no column headings are truncated
+SQL> 
+SQL> -- 3. Set the linesize to minimize wrapping
+SQL> SET LINESIZE 175
+SQL> 
+SQL> -- 4. Dot notation and aliases will ber applied to necessary in Part III
+SQL> 
+SQL> -- 5. Through 7. Use update statements to modify the rows as required
+SQL> 
+SQL> UPDATE TREATMENT_ebb
+  2  SET TreatmentDesc = 'Cortizone Injection-20 ml'
+  3  WHERE TreatmentCode = 'CI1';
+
+1 row updated.
+
+SQL> 
+SQL> UPDATE TREATMENT_ebb
+  2  SET TreatmentDesc = 'Cortizone Injection-40 ml'
+  3  WHERE TreatmentCode = 'CI2';
+
+1 row updated.
+
+SQL> 
+SQL> -- 6. Change the ApptStatus to “CN” for Appointment 109.
+SQL> UPDATE APPOINTMENT_ebb
+  2  SET ApptStatusCode = 'CN'
+  3  WHERE ApptID = 109;
+
+1 row updated.
+
+SQL> 
+SQL> -- 7. Change the ApptStatus to “CM” and the PmtStatus to “PD” for Appointment 107.
+SQL> UPDATE APPOINTMENT_ebb
+  2  SET ApptStatusCode = 'CM',
+  3  	 PmtStatus = 'PD'
+  4  WHERE ApptID = 107;
+
+1 row updated.
+
+SQL> 
+SQL> -- 8. Add a new Appointment. Generate the ApptID by incrementing the max ApptID by 1.
+SQL> INSERT INTO APPOINTMENT_ebb ( ApptID, ApptDateTime, PatientID, BillingType, InsCoID, ProvID, ApptStatusCode, PmtStatus)
+  2  SELECT MAX(ApptID) + 1, TO_DATE('02/21/2024 10:00AM', 'MM/DD/YYYY HH:MIAM'), 105, 'I', 323, 3, 'NC', 'NP'
+  3  FROM APPOINTMENT_ebb;
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO APPTDETAIL_ebb
+  2  SELECT MAX(ApptID), 'PT60' FROM APPOINTMENT_ebb;
+
+1 row created.
+
+SQL> 
+SQL> -- 9. Add a new Appointment. Generate the ApptID by incrementing the max ApptID by 1.
+SQL> INSERT INTO APPOINTMENT_ebb ( ApptID, ApptDateTime, PatientID, BillingType, InsCoID, ProvID, ApptStatusCode, PmtStatus)
+  2  SELECT MAX(ApptID) + 1, TO_DATE('02/22/2024 10:00AM', 'MM/DD/YYYY HH:MIAM'), 15, 'SP', 2, 3, 'NC', 'NP'
+  3  FROM APPOINTMENT_ebb;
+INSERT INTO APPOINTMENT_ebb ( ApptID, ApptDateTime, PatientID, BillingType, InsCoID, ProvID, ApptStatusCode, PmtStatus)
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (SYSTEM.SYS_C0010123) violated - parent key not found 
+
+
+SQL> 
+SQL> INSERT INTO APPTDETAIL_ebb
+  2  SELECT MAX(ApptID), 'PSF' FROM APPOINTMENT_ebb;
+
+1 row created.
+
+SQL> 
+SQL> -- 10. Change the phone number for Patient 15 to 469-555-8918
+SQL> UPDATE PATIENT_ebb
+  2  SET PatientPhone = '4695558918'
+  3  WHERE PatientID = 15;
+
+1 row updated.
+
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> -- PART III
+SQL> 
+SQL> -- 1
+SQL> SELECT PatientID AS "Patient ID", PatientFName || ' ' || PatientLName AS "Patient Name"
+  2  FROM PATIENT_ebb
+  3  ORDER BY PatientLName ASC;
+
+Patient ID Patient Name                                                                                                                                                        
+---------- -------------------------------                                                                                                                                     
+        84 James Clayton                                                                                                                                                       
+        23 Shelby Davis                                                                                                                                                        
+       120 Amanda Green                                                                                                                                                        
+        77 Kim Jackson                                                                                                                                                         
+        97 Chris Mancha                                                                                                                                                        
+        15 Jeff Miner                                                                                                                                                          
+       105 Johnny Redmond                                                                                                                                                      
+       100 Brenda Rhodes                                                                                                                                                       
+       101 Wesley Tanner                                                                                                                                                       
+       119 Mary Vaughn                                                                                                                                                         
+        28 Renee Walker                                                                                                                                                        
+
+11 rows selected.
+
+SQL> 
+SQL> -- 2.
+SQL> SELECT a.ApptID AS "ApptID", t.TreatmentDesc AS "Treatment", TO_CHAR(t.TreatmentRate, '$999,999.00') AS "Rate"
+  2  FROM APPTDETAIL_ebb a
+  3  JOIN TREATMENT_ebb t ON a.TreatmentCode = t.TreatmentCode
+  4  WHERE a.ApptID = 111
+  5  	 AND t.TreatmentRate = (
+  6  	     SELECT MAX(t2.TreatmentRate)
+  7  	     FROM APPTDETAIL_ebb a2
+  8  	     JOIN TREATMENT_ebb t2 ON a2.TreatmentCode = t2.TreatmentCode
+  9  	     WHERE a2.ApptID = 111
+ 10  	 );
+
+    ApptID Treatment                 Rate                                                                                                                                      
+---------- ------------------------- ------------                                                                                                                              
+       111 X-Ray                          $250.00                                                                                                                              
+
+SQL> 
+SQL> -- 3.
+SQL> SELECT
+  2  	 b.BlockCode AS "BlockCode",
+  3  	 b.BlockDesc AS "Description",
+  4  	 b.BlockMinutes AS "Minutes",
+  5  	 COUNT(t.TreatmentCode) AS "TreatmentCount"
+  6  FROM BLOCKCODE_ebb b
+  7  LEFT JOIN TREATMENT_ebb t ON b.BlockCode = t.BlockCode
+  8  GROUP BY b.BlockCode, b.BlockDesc, b.BlockMinutes
+  9  ORDER BY COUNT(t.TreatmentCode) ASC;
+
+Bl Descriptio    Minutes TreatmentCount                                                                                                                                        
+-- ---------- ---------- --------------                                                                                                                                        
+L4 Level 4            60              1                                                                                                                                        
+L3 Level 3            30              1                                                                                                                                        
+L1 Level 1            15              4                                                                                                                                        
+L2 Level 2            20              5                                                                                                                                        
+
+SQL> 
+SQL> -- 4.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 t.TreatmentCode AS "TreatCode",
+  4  	 t.TreatmentDesc AS "TreatDesc",
+  5  	 t.BlockCode AS "BlockCode",
+  6  	 b.BlockDesc AS "BlockCodeDesc",
+  7  	 b.BlockMinutes AS "Minutes",
+  8  	 TO_CHAR(t.TreatmentRate, '$999,999.00') AS "Rate"
+  9  FROM APPTDETAIL_ebb a
+ 10  JOIN TREATMENT_ebb t ON a.TreatmentCode = t.TreatmentCode
+ 11  JOIN BLOCKCODE_ebb b ON t.BlockCode = b.BlockCode
+ 12  WHERE t.TreatmentRate = (
+ 13  	 SELECT MAX(t2.TreatmentRate)
+ 14  	 FROM APPTDETAIL_ebb a2
+ 15  	 JOIN TREATMENT_ebb t2 ON a2.TreatmentCode = t2.TreatmentCode
+ 16  	 WHERE a2.ApptID = a.ApptID);
+
+    ApptID Trea TreatDesc                 Bl BlockCodeD    Minutes Rate                                                                                                        
+---------- ---- ------------------------- -- ---------- ---------- ------------                                                                                                
+       101 XR   X-Ray                     L2 Level 2            20      $250.00                                                                                                
+       102 SR   Suture Removal            L2 Level 2            20       $50.00                                                                                                
+       103 SR   Suture Removal            L2 Level 2            20       $50.00                                                                                                
+       104 PT30 Physical Therapy 30       L3 Level 3            30       $60.00                                                                                                
+       105 NP   New Patient               L1 Level 1            15       $45.00                                                                                                
+       106 PT60 Physical Therapy 60       L4 Level 4            60      $110.00                                                                                                
+       107 PT30 Physical Therapy 30       L3 Level 3            30       $60.00                                                                                                
+       108 GBP  General Back Pain         L2 Level 2            20       $60.00                                                                                                
+       109 SR   Suture Removal            L2 Level 2            20       $50.00                                                                                                
+       110 PT60 Physical Therapy 60       L4 Level 4            60      $110.00                                                                                                
+       111 XR   X-Ray                     L2 Level 2            20      $250.00                                                                                                
+
+    ApptID Trea TreatDesc                 Bl BlockCodeD    Minutes Rate                                                                                                        
+---------- ---- ------------------------- -- ---------- ---------- ------------                                                                                                
+       112 CI2  Cortizone Injection-40 ml L1 Level 1            15      $100.00                                                                                                
+       113 PT60 Physical Therapy 60       L4 Level 4            60      $110.00                                                                                                
+
+13 rows selected.
+
+SQL> 
+SQL> -- 5.
+SQL> SELECT
+  2  	 t.TreatmentCode AS "TreatmentCode",
+  3  	 t.TreatmentDesc AS "Description",
+  4  	 COUNT(a.ApptID) AS "ApptCount"
+  5  FROM TREATMENT_ebb t
+  6  LEFT JOIN APPTDETAIL_ebb a ON t.TreatmentCode = a.TreatmentCode
+  7  GROUP BY t.TreatmentCode, t.TreatmentDesc;
+
+Trea Description                ApptCount                                                                                                                                      
+---- ------------------------- ----------                                                                                                                                      
+NP   New Patient                        4                                                                                                                                      
+GBP  General Back Pain                  2                                                                                                                                      
+XR   X-Ray                              2                                                                                                                                      
+PSF  Post-Surgery Follow Up             4                                                                                                                                      
+SR   Suture Removal                     3                                                                                                                                      
+PT30 Physical Therapy 30                2                                                                                                                                      
+PT60 Physical Therapy 60                3                                                                                                                                      
+HP   Hip Pain                           2                                                                                                                                      
+CI2  Cortizone Injection-40 ml          1                                                                                                                                      
+CI1  Cortizone Injection-20 ml          0                                                                                                                                      
+BI   Back Injury                        0                                                                                                                                      
+
+11 rows selected.
+
+SQL> 
+SQL> -- 6.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 TO_CHAR(a.ApptDateTime, 'MM/DD/YY, HH:MIAM') AS "Date/Time",
+  4  	 p.PatientFName || ' ' || p.PatientLName AS "Patient",
+  5  	 '(' || SUBSTR(p.PatientPhone, 1, 3) || ') ' ||
+  6  	      SUBSTR(p.PatientPhone, 4, 3) || '-' ||
+  7  	      SUBSTR(p.PatientPhone, 7, 4) AS "Phone",
+  8  	 pr.ProviderFName || ' ' || pr.ProviderLName AS "Provider"
+  9  FROM APPOINTMENT_ebb a
+ 10  JOIN PATIENT_ebb p ON a.PatientID = p.PatientID
+ 11  JOIN PROVIDER_ebb pr ON a.ProvID = pr.ProvID
+ 12  ORDER BY a.ApptID;
+
+    ApptID Date/Time         Patient                         Phone                                        Provider                                                             
+---------- ----------------- ------------------------------- -------------------------------------------- -------------------------------                                      
+       101 02/19/24, 09:00AM Wesley Tanner                   (817) 555-1193                               Michael Smith                                                        
+       102 02/19/24, 09:00AM Brenda Rhodes                   (214) 555-1234                               Janice May                                                           
+       103 02/19/24, 10:00AM Jeff Miner                      (469) 555-8918                               Michael Smith                                                        
+       104 02/19/24, 10:30AM Kim Jackson                     (817) 555-4911                               Kay Jones                                                            
+       105 02/19/24, 10:30AM Mary Vaughn                     (817) 555-2334                               Michael Smith                                                        
+       106 02/19/24, 10:30AM Chris Mancha                    (469) 555-3440                               Ray Schultz                                                          
+       107 02/19/24, 11:30AM Renee Walker                    (214) 555-9285                               Ray Schultz                                                          
+       108 02/21/24, 11:30AM Johnny Redmond                  (214) 555-1084                               Michael Smith                                                        
+       109 02/19/24, 02:00PM James Clayton                   (214) 555-9285                               Janice May                                                           
+       110 02/20/24, 08:30AM James Clayton                   (214) 555-9285                               Ray Schultz                                                          
+       111 02/20/24, 08:30AM Shelby Davis                    (817) 555-1198                               Janice May                                                           
+
+    ApptID Date/Time         Patient                         Phone                                        Provider                                                             
+---------- ----------------- ------------------------------- -------------------------------------------- -------------------------------                                      
+       112 02/21/24, 09:00AM Amanda Green                    () -                                         Michael Smith                                                        
+       113 02/21/24, 10:00AM Johnny Redmond                  (214) 555-1084                               Ray Schultz                                                          
+
+13 rows selected.
+
+SQL> 
+SQL> -- 7.
+SQL> 
+SQL> SELECT
+  2  	 p.ProvID AS "Provider ID",
+  3  	 p.ProviderFName AS "First Name",
+  4  	 p.ProviderLName AS "Last Name",
+  5  	 COUNT(a.ApptID) AS "Appt Count"
+  6  FROM PROVIDER_ebb p
+  7  LEFT JOIN APPOINTMENT_ebb a ON p.ProvID = a.ProvID
+  8  GROUP BY p.ProvID, p.ProviderFName, p.ProviderLName
+  9  ORDER BY COUNT(a.ApptID) DESC;
+
+Provider ID First Name      Last Name       Appt Count                                                                                                                         
+----------- --------------- --------------- ----------                                                                                                                         
+          2 Michael         Smith                    5                                                                                                                         
+          3 Ray             Schultz                  4                                                                                                                         
+          5 Janice          May                      3                                                                                                                         
+          1 Kay             Jones                    1                                                                                                                         
+
+SQL> 
+SQL> -- 8.
+SQL> 
+SQL> SELECT
+  2  	 p.ProvID AS "Provider ID",
+  3  	 p.ProviderFName || ' ' || p.ProviderLName AS "Name",
+  4  	 TO_CHAR(SUM(t.TreatmentRate), '$999,999.00') AS "Total Charges"
+  5  FROM PROVIDER_ebb p
+  6  JOIN APPOINTMENT_ebb a ON p.ProvID = a.ProvID
+  7  JOIN APPTDETAIL_ebb d ON a.ApptID = d.ApptID
+  8  JOIN TREATMENT_ebb t ON d.TreatmentCode = t.TreatmentCode
+  9  GROUP BY p.ProvID, p.ProviderFName, p.ProviderLName
+ 10  ORDER BY SUM(t.TreatmentRate) DESC;
+
+Provider ID Name                            Total Charge                                                                                                                       
+----------- ------------------------------- ------------                                                                                                                       
+          2 Michael Smith                        $745.00                                                                                                                       
+          5 Janice May                           $515.00                                                                                                                       
+          3 Ray Schultz                          $420.00                                                                                                                       
+          1 Kay Jones                             $60.00                                                                                                                       
+
+SQL> 
+SQL> -- 9.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 TO_CHAR(a.ApptDateTime, 'MM/DD/YYYY HH:MIAM') AS "Date/Time",
+  4  	 COUNT(d.TreatmentCode) AS "TreatmentCount",
+  5  	 TO_CHAR(SUM(t.TreatmentRate), '$999,999.00') AS "TotalCharge"
+  6  FROM APPOINTMENT_ebb a
+  7  JOIN APPTDETAIL_ebb d ON a.ApptID = d.ApptID
+  8  JOIN TREATMENT_ebb t ON d.TreatmentCode = t.TreatmentCode
+  9  GROUP BY a.ApptID, a.ApptDateTime
+ 10  ORDER BY SUM(t.TreatmentRate) DESC, a.ApptID DESC;
+
+    ApptID Date/Time          TreatmentCount TotalCharge                                                                                                                       
+---------- ------------------ -------------- ------------                                                                                                                      
+       111 02/20/2024 08:30AM              3      $355.00                                                                                                                      
+       101 02/19/2024 09:00AM              3      $355.00                                                                                                                      
+       112 02/21/2024 09:00AM              3      $205.00                                                                                                                      
+       113 02/21/2024 10:00AM              2      $140.00                                                                                                                      
+       110 02/20/2024 08:30AM              1      $110.00                                                                                                                      
+       106 02/19/2024 10:30AM              1      $110.00                                                                                                                      
+       109 02/19/2024 02:00PM              2       $80.00                                                                                                                      
+       103 02/19/2024 10:00AM              2       $80.00                                                                                                                      
+       102 02/19/2024 09:00AM              2       $80.00                                                                                                                      
+       108 02/21/2024 11:30AM              1       $60.00                                                                                                                      
+       107 02/19/2024 11:30AM              1       $60.00                                                                                                                      
+
+    ApptID Date/Time          TreatmentCount TotalCharge                                                                                                                       
+---------- ------------------ -------------- ------------                                                                                                                      
+       104 02/19/2024 10:30AM              1       $60.00                                                                                                                      
+       105 02/19/2024 10:30AM              1       $45.00                                                                                                                      
+
+13 rows selected.
+
+SQL> 
+SQL> -- 10.
+SQL> SELECT
+  2  	 t.BlockCode AS "Block_Code",
+  3  	 t.TreatmentCode AS "Treatment_Code",
+  4  	 t.TreatmentDesc AS "Treatment_Desc",
+  5  	 TO_CHAR(t.TreatmentRate, '$999,999.00') AS "Rate"
+  6  FROM TREATMENT_ebb t
+  7  ORDER BY t.BlockCode ASC,
+  8  	      t.TreatmentCode ASC;
+
+Bl Trea Treatment_Desc            Rate                                                                                                                                         
+-- ---- ------------------------- ------------                                                                                                                                 
+L1 CI1  Cortizone Injection-20 ml       $50.00                                                                                                                                 
+L1 CI2  Cortizone Injection-40 ml      $100.00                                                                                                                                 
+L1 NP   New Patient                     $45.00                                                                                                                                 
+L1 PSF  Post-Surgery Follow Up          $30.00                                                                                                                                 
+L2 BI   Back Injury                     $60.00                                                                                                                                 
+L2 GBP  General Back Pain               $60.00                                                                                                                                 
+L2 HP   Hip Pain                        $60.00                                                                                                                                 
+L2 SR   Suture Removal                  $50.00                                                                                                                                 
+L2 XR   X-Ray                          $250.00                                                                                                                                 
+L3 PT30 Physical Therapy 30             $60.00                                                                                                                                 
+L4 PT60 Physical Therapy 60            $110.00                                                                                                                                 
+
+11 rows selected.
+
+SQL> 
+SQL> -- 11.
+SQL> SELECT
+  2  	 p.PatientID AS "Patient ID",
+  3  	 p.PatientLName AS "Last Name",
+  4  	 a.ApptID AS "Appt ID",
+  5  	 TO_CHAR(a.ApptDateTime, 'MM/DD/YYYY') AS "Appt Date",
+  6  	 pr.ProviderLName AS "Provider"
+  7  FROM APPOINTMENT_ebb a
+  8  JOIN PATIENT_ebb p ON a.PatientID = p.PatientID
+  9  JOIN PROVIDER_ebb pr ON a.ProvID = pr.ProvID
+ 10  ORDER BY p.PatientID ASC;
+
+Patient ID Last Name          Appt ID Appt Date  Provider                                                                                                                      
+---------- --------------- ---------- ---------- ---------------                                                                                                               
+        15 Miner                  103 02/19/2024 Smith                                                                                                                         
+        23 Davis                  111 02/20/2024 May                                                                                                                           
+        28 Walker                 107 02/19/2024 Schultz                                                                                                                       
+        77 Jackson                104 02/19/2024 Jones                                                                                                                         
+        84 Clayton                109 02/19/2024 May                                                                                                                           
+        84 Clayton                110 02/20/2024 Schultz                                                                                                                       
+        97 Mancha                 106 02/19/2024 Schultz                                                                                                                       
+       100 Rhodes                 102 02/19/2024 May                                                                                                                           
+       101 Tanner                 101 02/19/2024 Smith                                                                                                                         
+       105 Redmond                113 02/21/2024 Schultz                                                                                                                       
+       105 Redmond                108 02/21/2024 Smith                                                                                                                         
+
+Patient ID Last Name          Appt ID Appt Date  Provider                                                                                                                      
+---------- --------------- ---------- ---------- ---------------                                                                                                               
+       119 Vaughn                 105 02/19/2024 Smith                                                                                                                         
+       120 Green                  112 02/21/2024 Smith                                                                                                                         
+
+13 rows selected.
+
+SQL> 
+SQL> -- 12.
+SQL> SELECT
+  2  	 a.ApptID AS "Appt ID",
+  3  	 TO_CHAR(a.ApptDateTime, 'MM/DD/YYYY HH:MI AM') AS "Date/Time",
+  4  	 TO_CHAR(SUM(t.TreatmentRate), '$999,999.00') AS "Amt Paid"
+  5  FROM APPOINTMENT_ebb a
+  6  JOIN APPTDETAIL_ebb d ON a.ApptID = d.ApptID
+  7  JOIN TREATMENT_ebb t ON d.TreatmentCode = t.TreatmentCode
+  8  WHERE a.PmtStatus = 'PD'
+  9  GROUP BY a.ApptID, a.ApptDateTime
+ 10  ORDER BY SUM(t.TreatmentRate) DESC;
+
+   Appt ID Date/Time           Amt Paid                                                                                                                                        
+---------- ------------------- ------------                                                                                                                                    
+       101 02/19/2024 09:00 AM      $355.00                                                                                                                                    
+       103 02/19/2024 10:00 AM       $80.00                                                                                                                                    
+       104 02/19/2024 10:30 AM       $60.00                                                                                                                                    
+       107 02/19/2024 11:30 AM       $60.00                                                                                                                                    
+
+SQL> 
+SQL> -- 13.
+SQL> SELECT
+  2  	 TO_CHAR((COUNT(InsCoID) * 100.0 / COUNT(*)), '990.9') || '%' AS "Percentage with Insurance"
+  3  FROM APPOINTMENT_ebb;
+
+Percent                                                                                                                                                                        
+-------                                                                                                                                                                        
+  76.9%                                                                                                                                                                        
+
+SQL> 
+SQL> -- 14.
+SQL> SELECT
+  2  	 TO_CHAR(AVG(TreatmentRate), '$999,999.00') AS "Avg_Rate"
+  3  FROM TREATMENT_ebb;
+
+Avg_Rate                                                                                                                                                                       
+------------                                                                                                                                                                   
+      $79.55                                                                                                                                                                   
+
+SQL> 
+SQL> -- 15.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 TO_CHAR(a.ApptDateTime, 'MM/DD/YYYY') AS "Date",
+  4  	 p.PatientLName AS "Patient",
+  5  	 SUM(b.BlockMinutes) || ' Minutes' AS "Duration"
+  6  FROM APPOINTMENT_ebb a
+  7  JOIN PATIENT_ebb p ON a.PatientID = p.PatientID
+  8  JOIN APPTDETAIL_ebb d ON a.ApptID = d.ApptID
+  9  JOIN TREATMENT_ebb t ON d.TreatmentCode = t.TreatmentCode
+ 10  JOIN BLOCKCODE_ebb b ON t.BlockCode = b.BlockCode
+ 11  GROUP BY a.ApptID, a.ApptDateTime, p.PatientLName
+ 12  ORDER BY a.ApptDateTime;
+
+    ApptID Date       Patient         Duration                                                                                                                                 
+---------- ---------- --------------- ------------------------------------------------                                                                                         
+       101 02/19/2024 Tanner          55 Minutes                                                                                                                               
+       102 02/19/2024 Rhodes          35 Minutes                                                                                                                               
+       103 02/19/2024 Miner           35 Minutes                                                                                                                               
+       104 02/19/2024 Jackson         30 Minutes                                                                                                                               
+       105 02/19/2024 Vaughn          15 Minutes                                                                                                                               
+       106 02/19/2024 Mancha          60 Minutes                                                                                                                               
+       107 02/19/2024 Walker          30 Minutes                                                                                                                               
+       109 02/19/2024 Clayton         35 Minutes                                                                                                                               
+       110 02/20/2024 Clayton         60 Minutes                                                                                                                               
+       111 02/20/2024 Davis           55 Minutes                                                                                                                               
+       112 02/21/2024 Green           50 Minutes                                                                                                                               
+
+    ApptID Date       Patient         Duration                                                                                                                                 
+---------- ---------- --------------- ------------------------------------------------                                                                                         
+       113 02/21/2024 Redmond         75 Minutes                                                                                                                               
+       108 02/21/2024 Redmond         20 Minutes                                                                                                                               
+
+13 rows selected.
+
+SQL> 
+SQL> -- 16.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 t.TreatmentCode AS "TreatmentCode",
+  4  	 t.TreatmentDesc AS "Description",
+  5  	 b.BlockMinutes AS "Minutes",
+  6  	 TO_CHAR(t.TreatmentRate, '$999,999.00') AS "Rate"
+  7  FROM APPTDETAIL_ebb a
+  8  JOIN TREATMENT_ebb t ON a.TreatmentCode = t.TreatmentCode
+  9  JOIN BLOCKCODE_ebb b ON t.BlockCode = b.BlockCode
+ 10  WHERE t.TreatmentRate = (
+ 11  	     SELECT MIN(t2.TreatmentRate)
+ 12  	     FROM APPTDETAIL_ebb a2
+ 13  	     JOIN TREATMENT_ebb t2 ON a2.TreatmentCode = t2.TreatmentCode
+ 14  	     WHERE a2.ApptID = a.ApptID );
+
+    ApptID Trea Description                  Minutes Rate                                                                                                                      
+---------- ---- ------------------------- ---------- ------------                                                                                                              
+       101 NP   New Patient                       15       $45.00                                                                                                              
+       102 PSF  Post-Surgery Follow Up            15       $30.00                                                                                                              
+       103 PSF  Post-Surgery Follow Up            15       $30.00                                                                                                              
+       104 PT30 Physical Therapy 30               30       $60.00                                                                                                              
+       105 NP   New Patient                       15       $45.00                                                                                                              
+       106 PT60 Physical Therapy 60               60      $110.00                                                                                                              
+       107 PT30 Physical Therapy 30               30       $60.00                                                                                                              
+       108 GBP  General Back Pain                 20       $60.00                                                                                                              
+       109 PSF  Post-Surgery Follow Up            15       $30.00                                                                                                              
+       110 PT60 Physical Therapy 60               60      $110.00                                                                                                              
+       111 NP   New Patient                       15       $45.00                                                                                                              
+
+    ApptID Trea Description                  Minutes Rate                                                                                                                      
+---------- ---- ------------------------- ---------- ------------                                                                                                              
+       112 NP   New Patient                       15       $45.00                                                                                                              
+       113 PSF  Post-Surgery Follow Up            15       $30.00                                                                                                              
+
+13 rows selected.
+
+SQL> 
+SQL> -- 17.
+SQL> SELECT
+  2  	 t.TreatmentCode AS "Treatment Code",
+  3  	 t.TreatmentDesc AS "Description",
+  4  	 b.BlockMinutes AS "Minutes",
+  5  	 TO_CHAR(t.TreatmentRate, '$999,999.00') AS "Rate"
+  6  FROM TREATMENT_ebb t
+  7  JOIN BLOCKCODE_ebb b ON t.BlockCode = b.BlockCode
+  8  WHERE t.TreatmentRate > (SELECT AVG(TreatmentRate) FROM TREATMENT_ebb);
+
+Trea Description                  Minutes Rate                                                                                                                                 
+---- ------------------------- ---------- ------------                                                                                                                         
+XR   X-Ray                             20      $250.00                                                                                                                         
+PT60 Physical Therapy 60               60      $110.00                                                                                                                         
+CI2  Cortizone Injection-40 ml         15      $100.00                                                                                                                         
+
+SQL> 
+SQL> -- 18.
+SQL> SELECT
+  2  	 a.ApptID AS "ApptID",
+  3  	 TO_CHAR(a.ApptDateTime, 'MM-DD-YYYY') AS "Date",
+  4  	 p.PatientID AS "PatientID",
+  5  	 p.PatientLName AS "Name",
+  6  	 SUBSTR(p.PatientPhone, 1, 3) || '-' ||
+  7  	 SUBSTR(p.PatientPhone, 4, 3) || '-' ||
+  8  	 SUBSTR(p.PatientPhone, 7, 4) AS "Phone"
+  9  FROM APPOINTMENT_ebb a
+ 10  JOIN PATIENT_ebb p ON a.PatientID = p.PatientID
+ 11  WHERE a.ApptDateTime <= TO_DATE('02/20/2024', 'MM/DD/YYYY')
+ 12  ORDER BY a.ApptDateTime ASC, p.PatientID ASC;
+
+    ApptID Date        PatientID Name            Phone                                                                                                                         
+---------- ---------- ---------- --------------- ------------------------------------------                                                                                    
+       102 02-19-2024        100 Rhodes          214-555-1234                                                                                                                  
+       101 02-19-2024        101 Tanner          817-555-1193                                                                                                                  
+       103 02-19-2024         15 Miner           469-555-8918                                                                                                                  
+       104 02-19-2024         77 Jackson         817-555-4911                                                                                                                  
+       106 02-19-2024         97 Mancha          469-555-3440                                                                                                                  
+       105 02-19-2024        119 Vaughn          817-555-2334                                                                                                                  
+       107 02-19-2024         28 Walker          214-555-9285                                                                                                                  
+       109 02-19-2024         84 Clayton         214-555-9285                                                                                                                  
+
+8 rows selected.
+
+SQL> 
+SQL> -- 19.
+SQL> SELECT
+  2  	 p.PatientID AS "PatientID",
+  3  	 p.PatientFName AS "First Name",
+  4  	 p.PatientLName AS "Last Name",
+  5  	 SUBSTR(p.PatientPhone, 1, 3) || '-' ||
+  6  	 SUBSTR(p.PatientPhone, 4, 3) || '-' ||
+  7  	 SUBSTR(p.PatientPhone, 7, 4) AS "Phone"
+  8  FROM PATIENT_ebb p
+  9  WHERE p.PatientFName LIKE 'J%' OR p.PatientLName LIKE 'J%'
+ 10  ORDER BY p.PatientID ASC;
+
+ PatientID First Name      Last Name       Phone                                                                                                                               
+---------- --------------- --------------- ------------------------------------------                                                                                          
+        15 Jeff            Miner           469-555-8918                                                                                                                        
+        77 Kim             Jackson         817-555-4911                                                                                                                        
+        84 James           Clayton         214-555-9285                                                                                                                        
+       105 Johnny          Redmond         214-555-1084                                                                                                                        
+
+SQL> 
+SQL> -- 20.
+SQL> SELECT
+  2  	 s.ApptStatusCode AS "Status Code",
+  3  	 s.ApptStatusDesc AS "Description",
+  4  	 COUNT(a.ApptID) AS "Appt Count"
+  5  FROM APPTSTATUS_ebb s
+  6  LEFT JOIN APPOINTMENT_ebb a ON s.ApptStatusCode = a.ApptStatusCode
+  7  GROUP BY s.ApptStatusCode, s.ApptStatusDesc
+  8  ORDER BY COUNT(a.ApptID) DESC;
+
+St Description     Appt Count                                                                                                                                                  
+-- --------------- ----------                                                                                                                                                  
+CM Complete                 7                                                                                                                                                  
+NC Not Confirmed            3                                                                                                                                                  
+CN Confirmed                3                                                                                                                                                  
+
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> -- stop logging to the out file
+SQL> spool off

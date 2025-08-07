@@ -1,0 +1,1492 @@
+SQL> -- This will ensure that all input and output is logged to the file.
+SQL> 
+SQL> -- Eylijah Brinson
+SQL> -- INSY 3304-001
+SQL> -- Project 2
+SQL> 
+SQL> ALTER SESSION SET NLS_TIMESTAMP_FORMAT='MM/DD/YYYY HH:MI AM'
+  2  
+SQL> -- DROP all tables in the oppopsite order they were created to prevent name is already used by an existing object
+SQL> DROP TABLE AppointmentDetail_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE AppointmentInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE PaymentInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE StatusInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE BillingInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE ProviderInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE InsuranceInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE PatientInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE TreatmentInfo_ebb;
+
+Table dropped.
+
+SQL> DROP TABLE Block_ebb;
+
+Table dropped.
+
+SQL> 
+SQL> 
+SQL> -- Part1A
+SQL> CREATE TABLE Block_ebb(
+  2  BlockCode	     char(2) NOT NULL,
+  3  BlockDesc	     varchar2(20) NOT NULL,
+  4  BlockMinutes    number(3) NOT NULL,
+  5  PRIMARY KEY (BlockCode)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE TreatmentInfo_ebb(
+  2  TreatementCode varchar2(5) NOT NULL,
+  3  TreatementDesc varchar2(30) NOT NULL,
+  4  TreatementRate number(6,2) NOT NULL,
+  5  BlockCode	     char(2) NOT NULL,
+  6  BlockDesc	     varchar2(20),
+  7  BlockMinutes number(3),
+  8  PRIMARY KEY (TreatementCode),
+  9  FOREIGN KEY (BlockCode) REFERENCES Block_ebb
+ 10  );
+
+Table created.
+
+SQL> 
+SQL> 
+SQL> CREATE TABLE PatientInfo_ebb(
+  2  PatientID number(5),
+  3  PatientFName varchar2(20),
+  4  PatientLName varchar2(20),
+  5  PRIMARY KEY (PatientID)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE InsuranceInfo_ebb(
+  2  InsCoID number(5) NOT NULL,
+  3  InsCoName varchar2(30) NOT NULL,
+  4  PRIMARY KEY (InsCoID)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE ProviderInfo_ebb(
+  2  ProvID number(5) NOT NULL,
+  3  ProvFName varchar2(20) NOT NULL,
+  4  ProvLName varchar2(20) NOT NULL,
+  5  PRIMARY KEY (ProvID)
+  6  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE BillingInfo_ebb(
+  2  BillingType char(2) NOT NULL,
+  3  BillingTypeDesc varchar2(20) NOT NULL,
+  4  PRIMARY KEY (BillingType)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE StatusInfo_ebb(
+  2  ApptStatusCode char(2) NOT NULL,
+  3  ApptStatusDesc varchar2(20) NOT NULL,
+  4  PRIMARY KEY (ApptStatusCode)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE PaymentInfo_ebb(
+  2  PmtStatus char(2) NOT NULL,
+  3  PmtDesc varchar2(20) NOT NULL,
+  4  PRIMARY KEY (PmtStatus)
+  5  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE AppointmentInfo_ebb(
+  2  ApptID number(5) NOT NULL,
+  3  ApptDate date NOT NULL,
+  4  ApptTime varchar2(10) NOT NULL,
+  5  PatientID number(5) NOT NULL,
+  6  PatientFName varchar2(20) NOT NULL,
+  7  PatientLName varchar2(20) NOT NULL,
+  8  PatientPhone varchar2(20),
+  9  BillingType char(2) NOT NULL,
+ 10  BillingTypeDesc varchar2(20) NOT NULL,
+ 11  InsCoID number(5),
+ 12  InsCoName varchar2(20),
+ 13  ProvID number(5) NOT NULL,
+ 14  ProvFName varchar2(20) NOT NULL,
+ 15  ProvLName varchar2(20) NOT NULL,
+ 16  ApptStatusCode char(2) NOT NULL,
+ 17  ApptStatusDesc varchar2(20) NOT NULL,
+ 18  PmtStatus char(2) NOT NULL,
+ 19  PmtDesc varchar2(20) NOT NULL,
+ 20  PRIMARY KEY (ApptID),
+ 21  FOREIGN KEY (PatientID) REFERENCES PatientInfo_ebb,
+ 22  FOREIGN KEY (InsCoID) REFERENCES InsuranceInfo_ebb,
+ 23  FOREIGN KEY (ProvID) REFERENCES ProviderInfo_ebb ,
+ 24  FOREIGN KEY (ApptStatusCode) REFERENCES StatusInfo_ebb,
+ 25  FOREIGN KEY (PmtStatus) REFERENCES PaymentInfo_ebb ,
+ 26  FOREIGN key (BillingType) REFERENCES BillingInfo_ebb
+ 27  );
+
+Table created.
+
+SQL> 
+SQL> CREATE TABLE AppointmentDetail_ebb (
+  2  ApptID	    number(5)	  NOT NULL,
+  3  TreatmentCode  varchar2(5)   NOT NULL,
+  4  PRIMARY KEY (ApptID, TreatmentCode),
+  5  FOREIGN KEY (TreatmentCode) REFERENCES TreatmentInfo_ebb,
+  6  FOREIGN KEY (ApptID) REFERENCES AppointmentInfo_ebb
+  7  );
+
+Table created.
+
+SQL> -- 1B
+SQL> DESCRIBE AppointmentInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ APPTID                                    NOT NULL NUMBER(5)
+ APPTDATE                                  NOT NULL DATE
+ APPTTIME                                  NOT NULL VARCHAR2(10)
+ PATIENTID                                 NOT NULL NUMBER(5)
+ PATIENTFNAME                              NOT NULL VARCHAR2(20)
+ PATIENTLNAME                              NOT NULL VARCHAR2(20)
+ PATIENTPHONE                                       VARCHAR2(20)
+ BILLINGTYPE                               NOT NULL CHAR(2)
+ BILLINGTYPEDESC                           NOT NULL VARCHAR2(20)
+ INSCOID                                            NUMBER(5)
+ INSCONAME                                          VARCHAR2(20)
+ PROVID                                    NOT NULL NUMBER(5)
+ PROVFNAME                                 NOT NULL VARCHAR2(20)
+ PROVLNAME                                 NOT NULL VARCHAR2(20)
+ APPTSTATUSCODE                            NOT NULL CHAR(2)
+ APPTSTATUSDESC                            NOT NULL VARCHAR2(20)
+ PMTSTATUS                                 NOT NULL CHAR(2)
+ PMTDESC                                   NOT NULL VARCHAR2(20)
+
+SQL> DESCRIBE PaymentInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PMTSTATUS                                 NOT NULL CHAR(2)
+ PMTDESC                                   NOT NULL VARCHAR2(20)
+
+SQL> DESCRIBE StatusInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ APPTSTATUSCODE                            NOT NULL CHAR(2)
+ APPTSTATUSDESC                            NOT NULL VARCHAR2(20)
+
+SQL> DESCRIBE BillingInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BILLINGTYPE                               NOT NULL CHAR(2)
+ BILLINGTYPEDESC                           NOT NULL VARCHAR2(20)
+
+SQL> DESCRIBE ProviderInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PROVID                                    NOT NULL NUMBER(5)
+ PROVFNAME                                 NOT NULL VARCHAR2(20)
+ PROVLNAME                                 NOT NULL VARCHAR2(20)
+
+SQL> DESCRIBE InsuranceInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ INSCOID                                   NOT NULL NUMBER(5)
+ INSCONAME                                 NOT NULL VARCHAR2(30)
+
+SQL> DESCRIBE PatientInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PATIENTID                                 NOT NULL NUMBER(5)
+ PATIENTFNAME                                       VARCHAR2(20)
+ PATIENTLNAME                                       VARCHAR2(20)
+
+SQL> DESCRIBE AppointmentDetail_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ APPTID                                    NOT NULL NUMBER(5)
+ TREATMENTCODE                             NOT NULL VARCHAR2(5)
+
+SQL> DESCRIBE TreatmentInfo_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ TREATEMENTCODE                            NOT NULL VARCHAR2(5)
+ TREATEMENTDESC                            NOT NULL VARCHAR2(30)
+ TREATEMENTRATE                            NOT NULL NUMBER(6,2)
+ BLOCKCODE                                 NOT NULL CHAR(2)
+ BLOCKDESC                                          VARCHAR2(20)
+ BLOCKMINUTES                                       NUMBER(3)
+
+SQL> DESCRIBE Block_ebb
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BLOCKCODE                                 NOT NULL CHAR(2)
+ BLOCKDESC                                 NOT NULL VARCHAR2(20)
+ BLOCKMINUTES                              NOT NULL NUMBER(3)
+
+SQL> 
+SQL> -- part2
+SQL> 
+SQL> INSERT INTO Block_ebb
+  2  VALUES('L1','Level 1',15);
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO Block_ebb
+  2  VALUES('L2','Level 2',20);
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO Block_ebb
+  2  VAlUES('L3','Level 3',30);
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO Block_ebb
+  2  VAlUES('L4','Level 4',60);
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('NP','New Patient',45,'L1');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('GBP','General Back Pain',60,'L2');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('XR','X-Ray',250,'L2');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('PSF','Post-Surgery Follow Up',30,'L1');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('SR','Suture Removal',50, 'L2');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('PT30','Physical Therapy 30',65, 'L4');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('BI','Back Injury', 110,'L2');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('PT60','Physical Therapy 60',110, 'L3');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb(TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('HP','Hip Pain',250,'L2');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (101,'Wesley','Tanner');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (100,'Brenda','Rhodes');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (15,'Jeff','Miner');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (77,'Kim','Jackson');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (119,'Mary','Vaughn');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (97,'Chris','Mancha');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (28,'Renee','Walker');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (105,'Johnny','Redmond');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (84,'James','Clayton');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (23,'Shelby','Davis');
+
+1 row created.
+
+SQL> -- row inserted
+SQL> 
+SQL> 
+SQL> INSERT INTO InsuranceInfo_ebb
+  2  VALUES (323,'Humana');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO InsuranceInfo_ebb
+  2  VALUES (129,'Blue Cross');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO InsuranceInfo_ebb
+  2  VALUES (135,'TriCare');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO InsuranceInfo_ebb
+  2  VALUES (210,'State Farm');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> 
+SQL> INSERT INTO ProviderInfo_ebb
+  2  VALUES (2, 'Michael','Smith');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO ProviderInfo_ebb
+  2  VALUES (5, 'Janice','May');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO ProviderInfo_ebb
+  2  VALUES (1,'Kay','Jones');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO ProviderInfo_ebb
+  2  VALUES (3, 'Ray','Schultz');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> 
+SQL> INSERT INTO BillingInfo_ebb
+  2  VALUES ('I','Insurance');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO BillingInfo_ebb
+  2  VALUES ('SP','Self-Pay');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO BillingInfo_ebb
+  2  VALUES ('WC','Worker''s Comp');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> 
+SQL> INSERT INTO StatusInfo_ebb
+  2  VALUES ('CM','Complete');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO StatusInfo_ebb
+  2  VALUES ('CN','Confirmed');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO StatusInfo_ebb
+  2  VALUES ('NC','Not Confirmed');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> 
+SQL> INSERT INTO PaymentInfo_ebb
+  2  VALUES ('PD','Paid in Full');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PaymentInfo_ebb
+  2  VALUES ('PP','Partial Pmt');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO PaymentInfo_ebb
+  2  VALUES ('NP','Not Paid');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> -- ApptID 101
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    101, TO_TIMESTAMP('2/19/2024 09:00 AM', 'MM/DD/YYYY HH:MI AM'), '9:00 AM',
+  3    101, 'Wesley', 'Tanner', '(817)555-1193',
+  4    'I', 'Insurance', 323, 'Humana',
+  5    2, 'Michael', 'Smith',
+  6    'CM', 'Complete',
+  7    'PD', 'Paid in Full'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 102
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    102, TO_TIMESTAMP('2/19/2024 09:00 AM', 'MM/DD/YYYY HH:MI AM'), '9:00 AM',
+  3    100, 'Brenda', 'Rhodes', '(214)555-9191',
+  4    'I', 'Insurance', 129, 'Blue Cross',
+  5    5, 'Janice', 'May',
+  6    'CM', 'Complete',
+  7    'PP', 'Partial Pmt'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 103
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    103, TO_TIMESTAMP('2/19/2024 10:00 AM', 'MM/DD/YYYY HH:MI AM'), '10:00 AM',
+  3    15, 'Jeff', 'Miner', '(469)555-2301',
+  4    'SP', 'Self-Pay', 129, 'Blue Cross',
+  5    2, 'Michael', 'Smith',
+  6    'CM', 'Complete',
+  7    'PD', 'Paid in Full'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 104
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    104, TO_TIMESTAMP('2/19/2024 10:30 PM', 'MM/DD/YYYY HH:MI AM'), '10:30 PM',
+  3    77, 'Kim', 'Jackson', '(817)555-4911',
+  4    'WC', 'Worker''s Comp', 210, 'State Farm',
+  5    1, 'Kay', 'Jones',
+  6    'CM', 'Complete',
+  7    'PP', 'Partial Pmt'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 105
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    105, TO_TIMESTAMP('2/19/2024 10:30 AM', 'MM/DD/YYYY HH:MI AM'), '10:30 AM',
+  3    119, 'Mary', 'Vaughn', '(817)555-2334',
+  4    'I', 'Insurance', 129, 'Blue Cross',
+  5    2, 'Michael', 'Smith',
+  6    'CM', 'Complete',
+  7    'PP', 'Partial Pmt'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 106
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    106, TO_TIMESTAMP('2/19/2024 10:30 AM', 'MM/DD/YYYY HH:MI AM'), '10:30 AM',
+  3    97, 'Chris', 'Mancha', '(469)555-3440',
+  4    'SP', 'Self-Pay', 129, 'Blue Cross',
+  5    3, 'Ray', 'Schultz',
+  6    'CM', 'Complete',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 107
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    107, TO_TIMESTAMP('2/20/2024 11:30 AM', 'MM/DD/YYYY HH:MI AM'), '11:30 AM',
+  3    28, 'Renee', 'Walker', '(214)555-9285',
+  4    'I', 'Insurance', 129, 'Blue Cross',
+  5    3, 'Ray', 'Schultz',
+  6    'CN', 'Confirmed',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 108
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    108, TO_TIMESTAMP('2/20/2024 11:30 AM', 'MM/DD/YYYY HH:MI AM'), '11:30 AM',
+  3    105, 'Johnny', 'Redmond', '(214)555-1084',
+  4    'I', 'Insurance', 323, 'Humana',
+  5    2, 'Michael', 'Smith',
+  6    'CN', 'Confirmed',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 109
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    109, TO_TIMESTAMP('2/20/2024 02:00 PM', 'MM/DD/YYYY HH:MI AM'), '02:00 PM',
+  3    84, 'James', 'Clayton', '(214)555-9285',
+  4    'I', 'Insurance', 135, 'TriCare',
+  5    5, 'Janice', 'May',
+  6    'NC', 'Not Confirmed',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 110
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    110, TO_TIMESTAMP('2/20/2024 08:30 AM', 'MM/DD/YYYY HH:MI AM'), '8:30 AM',
+  3    84, 'James', 'Clayton', '(214)555-9285',
+  4    'I', 'Insurance', 135, 'TriCare',
+  5    3, 'Ray', 'Schultz',
+  6    'NC', 'Not Confirmed',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> 
+SQL> -- ApptID 111
+SQL> INSERT INTO AppointmentInfo_ebb VALUES (
+  2    111, TO_TIMESTAMP('2/20/2024 08:30 AM', 'MM/DD/YYYY HH:MI AM'), '8:30 AM',
+  3    23, 'Shelby', 'Davis', '(817)555-1198',
+  4    'WC', 'Worker''s Comp', 323, 'Humana',
+  5    5, 'Janice', 'May',
+  6    'CN', 'Confirmed',
+  7    'NP', 'Not Paid'
+  8  );
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (101,'NP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (101,'GBP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (101,'XR');
+
+1 row created.
+
+SQL> 
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (102,'PSF');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (102,'SR');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (103,'PSF');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (103,'SR');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (104,'PT30');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (105,'NP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (105,'BI');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (106,'PT60');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (107,'PT30');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (108,'GBP');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (109,'PSF');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (109,'SR');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (110,'PT30');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (110,'NP');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (111,'HP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (111,'XR');
+
+1 row created.
+
+SQL> -- Row inserted
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> -- Part2B
+SQL> SELECT * FROM AppointmentInfo_ebb;
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       101 19-FEB-24 9:00 AM           101 Wesley                               
+Tanner               (817)555-1193        I  Insurance                   323    
+Humana                        2 Michael              Smith                CM    
+Complete             PD Paid in Full                                            
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       102 19-FEB-24 9:00 AM           100 Brenda                               
+Rhodes               (214)555-9191        I  Insurance                   129    
+Blue Cross                    5 Janice               May                  CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       103 19-FEB-24 10:00 AM           15 Jeff                                 
+Miner                (469)555-2301        SP Self-Pay                    129    
+Blue Cross                    2 Michael              Smith                CM    
+Complete             PD Paid in Full                                            
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       104 19-FEB-24 10:30 PM           77 Kim                                  
+Jackson              (817)555-4911        WC Worker's Comp               210    
+State Farm                    1 Kay                  Jones                CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       105 19-FEB-24 10:30 AM          119 Mary                                 
+Vaughn               (817)555-2334        I  Insurance                   129    
+Blue Cross                    2 Michael              Smith                CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       106 19-FEB-24 10:30 AM           97 Chris                                
+Mancha               (469)555-3440        SP Self-Pay                    129    
+Blue Cross                    3 Ray                  Schultz              CM    
+Complete             NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       107 20-FEB-24 11:30 AM           28 Renee                                
+Walker               (214)555-9285        I  Insurance                   129    
+Blue Cross                    3 Ray                  Schultz              CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       108 20-FEB-24 11:30 AM          105 Johnny                               
+Redmond              (214)555-1084        I  Insurance                   323    
+Humana                        2 Michael              Smith                CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       109 20-FEB-24 02:00 PM           84 James                                
+Clayton              (214)555-9285        I  Insurance                   135    
+TriCare                       5 Janice               May                  NC    
+Not Confirmed        NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       110 20-FEB-24 8:30 AM            84 James                                
+Clayton              (214)555-9285        I  Insurance                   135    
+TriCare                       3 Ray                  Schultz              NC    
+Not Confirmed        NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       111 20-FEB-24 8:30 AM            23 Shelby                               
+Davis                (817)555-1198        WC Worker's Comp               323    
+Humana                        5 Janice               May                  CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+11 rows selected.
+
+SQL> SELECT * FROM PaymentInfo_ebb;
+
+PM PMTDESC                                                                      
+-- --------------------                                                         
+PD Paid in Full                                                                 
+PP Partial Pmt                                                                  
+NP Not Paid                                                                     
+
+SQL> SELECT * FROM StatusInfo_ebb;
+
+AP APPTSTATUSDESC                                                               
+-- --------------------                                                         
+CM Complete                                                                     
+CN Confirmed                                                                    
+NC Not Confirmed                                                                
+
+SQL> SELECT * FROM BillingInfo_ebb;
+
+BI BILLINGTYPEDESC                                                              
+-- --------------------                                                         
+I  Insurance                                                                    
+SP Self-Pay                                                                     
+WC Worker's Comp                                                                
+
+SQL> SELECT * FROM ProviderInfo_ebb;
+
+    PROVID PROVFNAME            PROVLNAME                                       
+---------- -------------------- --------------------                            
+         2 Michael              Smith                                           
+         5 Janice               May                                             
+         1 Kay                  Jones                                           
+         3 Ray                  Schultz                                         
+
+SQL> SELECT * FROM InsuranceInfo_ebb;
+
+   INSCOID INSCONAME                                                            
+---------- ------------------------------                                       
+       323 Humana                                                               
+       129 Blue Cross                                                           
+       135 TriCare                                                              
+       210 State Farm                                                           
+
+SQL> SELECT * FROM PatientInfo_ebb;
+
+ PATIENTID PATIENTFNAME         PATIENTLNAME                                    
+---------- -------------------- --------------------                            
+       101 Wesley               Tanner                                          
+       100 Brenda               Rhodes                                          
+        15 Jeff                 Miner                                           
+        77 Kim                  Jackson                                         
+       119 Mary                 Vaughn                                          
+        97 Chris                Mancha                                          
+        28 Renee                Walker                                          
+       105 Johnny               Redmond                                         
+        84 James                Clayton                                         
+        23 Shelby               Davis                                           
+
+10 rows selected.
+
+SQL> SELECT * FROM AppointmentDetail_ebb;
+
+    APPTID TREAT                                                                
+---------- -----                                                                
+       101 NP                                                                   
+       101 GBP                                                                  
+       101 XR                                                                   
+       102 PSF                                                                  
+       102 SR                                                                   
+       103 PSF                                                                  
+       103 SR                                                                   
+       104 PT30                                                                 
+       105 NP                                                                   
+       105 BI                                                                   
+       106 PT60                                                                 
+
+    APPTID TREAT                                                                
+---------- -----                                                                
+       107 PT30                                                                 
+       108 GBP                                                                  
+       109 PSF                                                                  
+       109 SR                                                                   
+       110 PT30                                                                 
+       110 NP                                                                   
+       111 HP                                                                   
+       111 XR                                                                   
+
+19 rows selected.
+
+SQL> SELECT * FROM TreatmentInfo_ebb;
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+NP    New Patient                                45 L1                          
+                                                                                
+                                                                                
+GBP   General Back Pain                          60 L2                          
+                                                                                
+                                                                                
+XR    X-Ray                                     250 L2                          
+                                                                                
+                                                                                
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+PSF   Post-Surgery Follow Up                     30 L1                          
+                                                                                
+                                                                                
+SR    Suture Removal                             50 L2                          
+                                                                                
+                                                                                
+PT30  Physical Therapy 30                        65 L4                          
+                                                                                
+                                                                                
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+BI    Back Injury                               110 L2                          
+                                                                                
+                                                                                
+PT60  Physical Therapy 60                       110 L3                          
+                                                                                
+                                                                                
+HP    Hip Pain                                  250 L2                          
+                                                                                
+                                                                                
+
+9 rows selected.
+
+SQL> SELECT * FROM Block_ebb;
+
+BL BLOCKDESC            BLOCKMINUTES                                            
+-- -------------------- ------------                                            
+L1 Level 1                        15                                            
+L2 Level 2                        20                                            
+L3 Level 3                        30                                            
+L4 Level 4                        60                                            
+
+SQL> 
+SQL> -- Part3
+SQL> 
+SQL> UPDATE AppointmentInfo_ebb
+  2  SET PatientPhone = '2145551234'
+  3  WHERE PatientID = 100;
+
+1 row updated.
+
+SQL> 
+SQL> INSERT INTO PatientInfo_ebb
+  2  VALUES (120, 'Amanda', 'Green');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb (TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('CI1', 'Cortizone Injection 1', 50, 'L1');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TreatmentInfo_ebb (TreatementCode, TreatementDesc, TreatementRate, BlockCode)
+  2  VALUES ('CI2', 'Cortizone Injection 2', 100, 'L1');
+
+1 row created.
+
+SQL> 
+SQL> UPDATE AppointmentInfo_ebb
+  2  SET ApptDate = TO_TIMESTAMP('2/21/2024 11:30 AM', 'MM/DD/YYYY HH:MI AM')
+  3  WHERE ApptID = 108;
+
+1 row updated.
+
+SQL> 
+SQL> UPDATE AppointmentInfo_ebb
+  2  SET ApptDate = TO_TIMESTAMP('2/21/2024 11:30 AM', 'MM/DD/YYYY HH:MI AM')
+  3  WHERE ApptID = 108;
+
+1 row updated.
+
+SQL> 
+SQL> UPDATE AppointmentInfo_ebb
+  2  SET BillingType = 'WC', BillingTypeDesc = 'Worker''s Comp'
+  3  WHERE ApptID = 107;
+
+1 row updated.
+
+SQL> 
+SQL> INSERT INTO AppointmentInfo_ebb
+  2  VALUES (
+  3    112, TO_TIMESTAMP('2/21/2024 09:00 AM', 'MM/DD/YYYY HH:MI AM'), '9:00 AM',
+  4    120, 'Amanda', 'Green', NULL,
+  5    'SP', 'Self-Pay', NULL, NULL,
+  6    2, 'Michael', 'Smith',
+  7    'NC', 'Not Confirmed',
+  8    'NP', 'Not Paid'
+  9  );
+
+1 row created.
+
+SQL> 
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (112, 'NP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (112, 'HP');
+
+1 row created.
+
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (112, 'CI2');
+
+1 row created.
+
+SQL> 
+SQL> DELETE FROM AppointmentDetail_ebb
+  2  WHERE ApptID = 105 AND TreatmentCode = 'BI';
+
+1 row deleted.
+
+SQL> 
+SQL> INSERT INTO AppointmentDetail_ebb VALUES (105, 'GBP');
+
+1 row created.
+
+SQL> 
+SQL> SELECT * FROM AppointmentInfo_ebb
+  2  ORDER BY ApptID;
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       101 19-FEB-24 9:00 AM           101 Wesley                               
+Tanner               (817)555-1193        I  Insurance                   323    
+Humana                        2 Michael              Smith                CM    
+Complete             PD Paid in Full                                            
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       102 19-FEB-24 9:00 AM           100 Brenda                               
+Rhodes               2145551234           I  Insurance                   129    
+Blue Cross                    5 Janice               May                  CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       103 19-FEB-24 10:00 AM           15 Jeff                                 
+Miner                (469)555-2301        SP Self-Pay                    129    
+Blue Cross                    2 Michael              Smith                CM    
+Complete             PD Paid in Full                                            
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       104 19-FEB-24 10:30 PM           77 Kim                                  
+Jackson              (817)555-4911        WC Worker's Comp               210    
+State Farm                    1 Kay                  Jones                CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       105 19-FEB-24 10:30 AM          119 Mary                                 
+Vaughn               (817)555-2334        I  Insurance                   129    
+Blue Cross                    2 Michael              Smith                CM    
+Complete             PP Partial Pmt                                             
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       106 19-FEB-24 10:30 AM           97 Chris                                
+Mancha               (469)555-3440        SP Self-Pay                    129    
+Blue Cross                    3 Ray                  Schultz              CM    
+Complete             NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       107 20-FEB-24 11:30 AM           28 Renee                                
+Walker               (214)555-9285        WC Worker's Comp               129    
+Blue Cross                    3 Ray                  Schultz              CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       108 21-FEB-24 11:30 AM          105 Johnny                               
+Redmond              (214)555-1084        I  Insurance                   323    
+Humana                        2 Michael              Smith                CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       109 20-FEB-24 02:00 PM           84 James                                
+Clayton              (214)555-9285        I  Insurance                   135    
+TriCare                       5 Janice               May                  NC    
+Not Confirmed        NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       110 20-FEB-24 8:30 AM            84 James                                
+Clayton              (214)555-9285        I  Insurance                   135    
+TriCare                       3 Ray                  Schultz              NC    
+Not Confirmed        NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       111 20-FEB-24 8:30 AM            23 Shelby                               
+Davis                (817)555-1198        WC Worker's Comp               323    
+Humana                        5 Janice               May                  CN    
+Confirmed            NP Not Paid                                                
+                                                                                
+
+    APPTID APPTDATE  APPTTIME    PATIENTID PATIENTFNAME                         
+---------- --------- ---------- ---------- --------------------                 
+PATIENTLNAME         PATIENTPHONE         BI BILLINGTYPEDESC         INSCOID    
+-------------------- -------------------- -- -------------------- ----------    
+INSCONAME                PROVID PROVFNAME            PROVLNAME            AP    
+-------------------- ---------- -------------------- -------------------- --    
+APPTSTATUSDESC       PM PMTDESC                                                 
+-------------------- -- --------------------                                    
+       112 21-FEB-24 9:00 AM           120 Amanda                               
+Green                                     SP Self-Pay                           
+                              2 Michael              Smith                NC    
+Not Confirmed        NP Not Paid                                                
+                                                                                
+
+12 rows selected.
+
+SQL> 
+SQL> SELECT * FROM AppointmentDetail_ebb
+  2  ORDER BY ApptID, TreatmentCode;
+
+    APPTID TREAT                                                                
+---------- -----                                                                
+       101 GBP                                                                  
+       101 NP                                                                   
+       101 XR                                                                   
+       102 PSF                                                                  
+       102 SR                                                                   
+       103 PSF                                                                  
+       103 SR                                                                   
+       104 PT30                                                                 
+       105 GBP                                                                  
+       105 NP                                                                   
+       106 PT60                                                                 
+
+    APPTID TREAT                                                                
+---------- -----                                                                
+       107 PT30                                                                 
+       108 GBP                                                                  
+       109 PSF                                                                  
+       109 SR                                                                   
+       110 NP                                                                   
+       110 PT30                                                                 
+       111 HP                                                                   
+       111 XR                                                                   
+       112 CI2                                                                  
+       112 HP                                                                   
+       112 NP                                                                   
+
+22 rows selected.
+
+SQL> 
+SQL> SELECT * FROM BillingInfo_ebb
+  2  ORDER BY BillingType;
+
+BI BILLINGTYPEDESC                                                              
+-- --------------------                                                         
+I  Insurance                                                                    
+SP Self-Pay                                                                     
+WC Worker's Comp                                                                
+
+SQL> 
+SQL> SELECT * FROM Block_ebb
+  2  ORDER BY BlockCode;
+
+BL BLOCKDESC            BLOCKMINUTES                                            
+-- -------------------- ------------                                            
+L1 Level 1                        15                                            
+L2 Level 2                        20                                            
+L3 Level 3                        30                                            
+L4 Level 4                        60                                            
+
+SQL> 
+SQL> SELECT * FROM InsuranceInfo_ebb
+  2  ORDER BY InsCoID;
+
+   INSCOID INSCONAME                                                            
+---------- ------------------------------                                       
+       129 Blue Cross                                                           
+       135 TriCare                                                              
+       210 State Farm                                                           
+       323 Humana                                                               
+
+SQL> 
+SQL> SELECT * FROM PatientInfo_ebb
+  2  ORDER BY PatientID;
+
+ PATIENTID PATIENTFNAME         PATIENTLNAME                                    
+---------- -------------------- --------------------                            
+        15 Jeff                 Miner                                           
+        23 Shelby               Davis                                           
+        28 Renee                Walker                                          
+        77 Kim                  Jackson                                         
+        84 James                Clayton                                         
+        97 Chris                Mancha                                          
+       100 Brenda               Rhodes                                          
+       101 Wesley               Tanner                                          
+       105 Johnny               Redmond                                         
+       119 Mary                 Vaughn                                          
+       120 Amanda               Green                                           
+
+11 rows selected.
+
+SQL> 
+SQL> SELECT * FROM PaymentInfo_ebb
+  2  ORDER BY PmtStatus;
+
+PM PMTDESC                                                                      
+-- --------------------                                                         
+NP Not Paid                                                                     
+PD Paid in Full                                                                 
+PP Partial Pmt                                                                  
+
+SQL> 
+SQL> SELECT * FROM ProviderInfo_ebb
+  2  ORDER BY ProvID;
+
+    PROVID PROVFNAME            PROVLNAME                                       
+---------- -------------------- --------------------                            
+         1 Kay                  Jones                                           
+         2 Michael              Smith                                           
+         3 Ray                  Schultz                                         
+         5 Janice               May                                             
+
+SQL> 
+SQL> SELECT * FROM StatusInfo_ebb
+  2  ORDER BY ApptStatus;
+ORDER BY ApptStatus
+         *
+ERROR at line 2:
+ORA-00904: "APPTSTATUS": invalid identifier 
+
+
+SQL> 
+SQL> SELECT * FROM TreatmentInfo_ebb
+  2  ORDER BY TreatementCode;
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+BI    Back Injury                               110 L2                          
+                                                                                
+                                                                                
+CI1   Cortizone Injection 1                      50 L1                          
+                                                                                
+                                                                                
+CI2   Cortizone Injection 2                     100 L1                          
+                                                                                
+                                                                                
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+GBP   General Back Pain                          60 L2                          
+                                                                                
+                                                                                
+HP    Hip Pain                                  250 L2                          
+                                                                                
+                                                                                
+NP    New Patient                                45 L1                          
+                                                                                
+                                                                                
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+PSF   Post-Surgery Follow Up                     30 L1                          
+                                                                                
+                                                                                
+PT30  Physical Therapy 30                        65 L4                          
+                                                                                
+                                                                                
+PT60  Physical Therapy 60                       110 L3                          
+                                                                                
+                                                                                
+
+TREAT TREATEMENTDESC                 TREATEMENTRATE BL BLOCKDESC                
+----- ------------------------------ -------------- -- --------------------     
+BLOCKMINUTES                                                                    
+------------                                                                    
+SR    Suture Removal                             50 L2                          
+                                                                                
+                                                                                
+XR    X-Ray                                     250 L2                          
+                                                                                
+                                                                                
+
+11 rows selected.
+
+SQL> 
+SQL> -- This will turn off logging.
+SQL> set echo off
